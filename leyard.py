@@ -90,13 +90,17 @@ def convert_excel2csv(cfg):
     for vName in in_cols :
          in_cols_j[vName] = cfg.getint("cols_in",  vName)
 
-    csvFNameRUR =csvFName[:-4]+'RUR'+csvFName[-4:]
-    csvFNameUSD =csvFName[:-4]+'USD'+csvFName[-4:]
+    csvFNameRUR =csvFName[:-4]+'_RUR'+csvFName[-4:]
+    csvFNameEUR =csvFName[:-4]+'_EUR'+csvFName[-4:]
+    csvFNameUSD =csvFName[:-4]+'_USD'+csvFName[-4:]
     outFileRUR = open( csvFNameRUR, 'w', newline='', encoding='CP1251', errors='replace')
+    outFileEUR = open( csvFNameEUR, 'w', newline='', encoding='CP1251', errors='replace')
     outFileUSD = open( csvFNameUSD, 'w', newline='', encoding='CP1251', errors='replace')
     csvWriterRUR = csv.DictWriter(outFileRUR, fieldnames=out_cols )
+    csvWriterEUR = csv.DictWriter(outFileEUR, fieldnames=out_cols )
     csvWriterUSD = csv.DictWriter(outFileUSD, fieldnames=out_cols )
     csvWriterRUR.writeheader()
+    csvWriterEUR.writeheader()
     csvWriterUSD.writeheader()
 
     recOut  ={}
@@ -132,13 +136,12 @@ def convert_excel2csv(cfg):
                         shablon = nameToId(shablon)
                     recOut[outColName] = shablon.strip()
 
-            try:
-                if '$' in (sheet.cell( row=i, column=in_cols_j['цена1']).value):   # USD
-                    csvWriterUSD.writerow(recOut)
-                else:
-                    csvWriterRUR.writerow(recOut)    
-            except Exception as e:
-                    csvWriterRUR.writerow(recOut)
+            if   'RUR'==recOut['валюта'] :
+                       csvWriterRUR.writerow(recOut)
+            elif 'USD'==recOut['валюта'] :
+                       csvWriterUSD.writerow(recOut)    
+            elif 'EUR'==recOut['валюта'] :
+                       csvWriterEUR.writerow(recOut)    
             
         except Exception as e:
             print(e)
@@ -198,7 +201,13 @@ def processing(cfgFName):
     convert_excel2csv(cfg)
     if os.name == 'nt' :
         folderName = os.path.basename(os.getcwd())
-        if os.path.exists(filename_out)  : shutil.copy2(filename_out , 'c://AV_PROM/prices/' + folderName +'/'+filename_out)
+        foutRUR = filename_out[:-4]+'_RUR'+filename_out[-4:]
+        foutEUR = filename_out[:-4]+'_EUR'+filename_out[-4:]
+        foutUSD = filename_out[:-4]+'_USD'+filename_out[-4:]
+
+        if os.path.exists(foutRUR)  : shutil.copy2(foutRUR , 'c://AV_PROM/prices/' + folderName +'/'+foutRUR)
+        if os.path.exists(foutEUR)  : shutil.copy2(foutEUR , 'c://AV_PROM/prices/' + folderName +'/'+foutEUR)
+        if os.path.exists(foutUSD)  : shutil.copy2(foutUSD , 'c://AV_PROM/prices/' + folderName +'/'+foutUSD)
         if os.path.exists('python.log')  : shutil.copy2('python.log',  'c://AV_PROM/prices/' + folderName +'/python.log')
         if os.path.exists('python.log.1'): shutil.copy2('python.log.1','c://AV_PROM/prices/' + folderName +'/python.log.1')
     

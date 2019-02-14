@@ -46,7 +46,7 @@ def getCellXlsx(  row       # номер строки
     ccc = sheet.cell(row=row, column=col)
     cellType  = ccc.data_type
     cellValue = ccc.value
-    if (isDigit == 'Y') : 
+    if (isDigit == 'Y'):
         if (cellValue == None) : 
             ss = '0'
         elif (cellType in ('n')) :                  # numeric
@@ -55,11 +55,12 @@ def getCellXlsx(  row       # номер строки
             else :
                 ss = str(cellValue)
         else :
-#           ss = '0'
             try:
                 t = cellValue
                 t = t.replace(',','.')
                 t = t.replace(' ','')
+                t = t.replace(' ','')      #  не пробел
+                t = t.replace('€','')
                 t = t.replace('$','')
                 ss = str(float(t))
             except ValueError as e:

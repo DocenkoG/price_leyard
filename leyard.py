@@ -93,6 +93,7 @@ def convert_excel2csv(cfg):
     csvWriterEUR = csv.DictWriter(outFileEUR, fieldnames=out_cols )
     csvWriterEUR.writeheader()
 
+    pricelines   =[]
     for sheetName in sheetNames:
         log.debug("Sheet   "+sheetName)
         sheet = book[sheetName]
@@ -120,12 +121,6 @@ def convert_excel2csv(cfg):
                 if impValues['подгруппа2'] != '':                                             # Подгруппа 1
                     subgrp2 = "/" + impValues['подгруппа2']
                     continue
-                    #print(sheet.cell( row=i, column=in_cols_j['код_']).fill.fgColor.indexed)
-                    #col2 = sheet.cell( row=i, column=in_cols_j['код_']).value.strip()
-                    #t = col2.rpartition(' ')
-                    #brand  = t[2]
-                    #subgrp = t[0]
-                    #continue
                 if impValues['цена1']=='0': # (ccc.value == None) or (ccc2.value == None) :   # Пустая строка
                     #print( 'Пустая строка. i=',i, impValues )
                     continue
@@ -147,7 +142,8 @@ def convert_excel2csv(cfg):
                             shablon = nameToId(shablon)
                         recOut[outColName] = shablon.strip()
     
-                    csvWriterEUR.writerow(recOut)    
+                    pricelines.append(dict(recOut))
+                    #csvWriterEUR.writerow(recOut)    
                 
             except Exception as e:
                 print(e)
@@ -155,8 +151,20 @@ def convert_excel2csv(cfg):
                     pass
                 else:
                     log.debug('Exception: <' + str(e) + '> при обработке строки ' + str(i) +'.' )
-        
         log.info('Обработано ' +str(i_last)+ ' строк.')
+
+    pricelines.sort(key=lambda recOut: recOut['код'])
+    j = 0
+    for k in range(1, len(pricelines)):
+        if pricelines[k]['код'] in(pricelines[k-1]['код']):
+            j += 1
+            log.info('--- Дубликат ' + str(j) )
+            log.info( pricelines[k-1]['код'] + '.' + pricelines[k-1]['код производителя'] + ' ' + pricelines[k-1]['описание'])
+            log.info( pricelines[k]['код'] + '.' +  pricelines[k]['код производителя']+ ' ' + pricelines[k]['описание'])
+            pricelines[k]['код'] = pricelines[k]['код'] + '.' + pricelines[k]['код производителя']
+    for line_ in pricelines:
+        csvWriterEUR.writerow(line_)
+        
     outFileEUR.close()
 
 

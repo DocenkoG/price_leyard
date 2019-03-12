@@ -153,15 +153,21 @@ def convert_excel2csv(cfg):
                     log.debug('Exception: <' + str(e) + '> при обработке строки ' + str(i) +'.' )
         log.info('Обработано ' +str(i_last)+ ' строк.')
 
-    pricelines.sort(key=lambda recOut: recOut['код'])
+    pricelines.sort(key=lambda recOut: recOut['код'] + recOut['код производителя'])
     j = 0
     for k in range(1, len(pricelines)):
         if pricelines[k]['код'] in(pricelines[k-1]['код']):
             j += 1
-            log.info('--- Дубликат ' + str(j) )
-            log.info( pricelines[k-1]['код'] + '.' + pricelines[k-1]['код производителя'] + ' ' + pricelines[k-1]['описание'])
-            log.info( pricelines[k]['код'] + '.' +  pricelines[k]['код производителя']+ ' ' + pricelines[k]['описание'])
-            pricelines[k]['код'] = pricelines[k]['код'] + '.' + pricelines[k]['код производителя']
+            if pricelines[k]['код производителя'] == (pricelines[k-1]['код производителя']):
+                log.info('--- Удаляемый дубликат ' + str(j) + ' ' + pricelines[k]['код'])
+                log.info( pricelines[k-1]['код производителя'] + ' ' + pricelines[k-1]['описание'])
+                log.info( pricelines[k]['код производителя'] + ' ' + pricelines[k]['описание'])
+                k = k - 1
+            else:
+                log.info('--- Дубликат размножен ' + str(j) + ' ' + pricelines[k]['код'])
+                log.info(pricelines[k-1]['код производителя'] + ' ' + pricelines[k-1]['описание'])
+                log.info(pricelines[k]['код производителя']+ ' ' + pricelines[k]['описание'])
+                pricelines[k]['код'] = pricelines[k]['код'] + '.' + pricelines[k]['код производителя']
     for line_ in pricelines:
         csvWriterEUR.writerow(line_)
         
